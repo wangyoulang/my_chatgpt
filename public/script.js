@@ -8,6 +8,8 @@ $(function () {
     if (message !== "") {
       sendMessage(message);
       messageInput.val("");
+      const response = getChatResponse(message);
+      sendMessage(response);
     }
   });
 
@@ -30,39 +32,40 @@ $(function () {
     chatLog.append(messageDiv);
     chatLog.scrollTop(chatLog[0].scrollHeight);
 
+
+  }
+  async function getChatResponse(input) {
     const fetch = require('node-fetch');
     const http = require('http');
     const HttpProxyAgent = require('http-proxy-agent');
-    const proxy = new HttpProxyAgent('http://<proxy_host>:<proxy_port>');
+    const proxy = new HttpProxyAgent('http://127.0.0.1:7890');
 
-    async function getChatResponse(input) {
-      const url = 'https://chat.openai.com/chat';
-      const apiKey = process.env.API_KEY;
+    const url = 'https://chat.openai.com/chat';
+    const apiKey = process.env.API_KEY;
 
-      const body = {
-        prompt: input,
-        temperature: 0.7,
-        max_tokens: 60,
-        stop: '\n'
-      };
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify(body),
-        agent: proxy
-      });
+    const body = {
+      prompt: input,
+      temperature: 0.7,
+      max_tokens: 60,
+      stop: '\n'
+    };
 
-      const result = await response.json();
-      chatLog.append(result.choices[0].text.trim());
-      chatLog.scrollTop(chatLog[0].scrollHeight);
-    }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(body),
+      agent: proxy
+    });
+
+    const result = await response.json();
+    return result.choices[0].text.trim();
   }
 
   // Example message received from server
-  var receivedMessage = "Hello! How can I help you today?";
+  var receivedMessage = "奴才救驾来迟，罪该万死！";
   sendMessage(receivedMessage);
        });
   
