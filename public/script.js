@@ -29,6 +29,36 @@ $(function () {
       '</div>';
     chatLog.append(messageDiv);
     chatLog.scrollTop(chatLog[0].scrollHeight);
+
+    const fetch = require('node-fetch');
+    const http = require('http');
+    const HttpProxyAgent = require('http-proxy-agent');
+    const proxy = new HttpProxyAgent('http://<proxy_host>:<proxy_port>');
+
+    async function getChatResponse(input) {
+      const url = 'https://chat.openai.com/chat';
+      const apiKey = process.env.API_KEY;
+
+      const body = {
+        prompt: input,
+        temperature: 0.7,
+        max_tokens: 60,
+        stop: '\n'
+      };
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(body),
+        agent: proxy
+      });
+
+      const result = await response.json();
+      chatLog.append(result.choices[0].text.trim());
+      chatLog.scrollTop(chatLog[0].scrollHeight);
+    }
   }
 
   // Example message received from server
